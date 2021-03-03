@@ -33,6 +33,12 @@
         packages.${name} = naersk-lib.buildPackage {
           pname = name;
           root = ./.;
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+          buildInputs = with pkgs; lib.optionals stdenv.isDarwin [
+            libiconv
+          ];
         };
         defaultPackage = packages.${name};
 
@@ -45,7 +51,12 @@
         # `nix develop`
         devShell = pkgs.mkShell {
           name = "${name}-dev-shell";
-          nativeBuildInputs = [ rust ];
+
+          nativeBuildInputs = [ rust pkgs.pkg-config ];
+          buildInputs = with pkgs; lib.optionals stdenv.isDarwin [
+            libiconv
+          ];
+
           shellHook = ''
             export PATH=$PWD/target/debug:$PATH
           '';

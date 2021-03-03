@@ -1,8 +1,10 @@
 [package]
 name = "setsid"
+description = "A POSIX implementation of setsid(1)"
 version = "0.1.0"
 authors = ["Vincent Haupert <mail@vincent-haupert.de>"]
 edition = "2018"
 
 [dependencies]
-libc = "0.2"
+nix = "0.20.0"
+clap = "2.33.3"
