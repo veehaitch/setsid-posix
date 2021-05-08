@@ -39,11 +39,21 @@
         packages.${name} = naersk-lib.buildPackage {
           pname = name;
           root = ./.;
+
           nativeBuildInputs = with pkgs; [
             pkg-config
           ];
+
           buildInputs = with pkgs; lib.optionals stdenv.isDarwin [
             libiconv
+          ];
+
+          doCheck = true;
+          cargoTestCommands = x: x ++ [
+            # clippy
+            ''cargo clippy --all --all-features --tests -- -D clippy::pedantic''
+            # rustfmt
+            ''cargo fmt -- --check''
           ];
         };
         defaultPackage = packages.${name};
@@ -62,6 +72,8 @@
           buildInputs = with pkgs; lib.optionals stdenv.isDarwin [
             libiconv
           ];
+
+          RUST_SRC_PATH = "${rust}/lib/rustlib/src/rust/library";
 
           shellHook = ''
             export PATH=$PWD/target/debug:$PATH

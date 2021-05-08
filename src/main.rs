@@ -26,12 +26,9 @@ fn fork() {
 }
 
 fn create_new_session() {
-    match { setsid() } {
-        Ok(_) => {}
-        Err(_) => {
-            eprintln!("setsid(2) failed");
-            process::exit(EXIT_FAILURE);
-        }
+    if setsid().is_err() {
+        eprintln!("setsid(2) failed");
+        process::exit(EXIT_FAILURE);
     }
 }
 
@@ -97,7 +94,7 @@ fn parse_args() -> Opts {
             matches
                 .values_of("arguments")
                 .unwrap()
-                .map(|s| s.to_string())
+                .map(std::string::ToString::to_string)
                 .collect()
         } else {
             Vec::new()
