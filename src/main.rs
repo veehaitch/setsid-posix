@@ -34,8 +34,6 @@ fn create_new_session() {
 
 struct Opts {
     fork: bool,
-    ctty: bool,
-    wait: bool,
     program: String,
     arguments: Vec<String>,
 }
@@ -85,35 +83,29 @@ fn parse_args() -> Opts {
         )
         .get_matches();
 
+    if matches.is_present("wait") {
+        eprintln!("The --wait flag is currently not implemented");
+        process::exit(EXIT_FAILURE);
+    }
+
+    if matches.is_present("ctty") {
+        eprintln!("The --ctty flag is currently not implemented");
+        process::exit(EXIT_FAILURE);
+    }
+    
     Opts {
-        ctty: matches.is_present("ctty"),
         fork: matches.is_present("fork"),
-        wait: matches.is_present("wait"),
         program: matches.value_of("program").unwrap().to_string(),
-        arguments: if matches.is_present("arguments") {
-            matches
-                .values_of("arguments")
-                .unwrap()
-                .map(std::string::ToString::to_string)
-                .collect()
-        } else {
-            Vec::new()
-        },
+        arguments: matches
+            .values_of("arguments")
+            .unwrap_or_default()
+            .map(std::string::ToString::to_string)
+            .collect(),
     }
 }
 
 fn main() {
     let opts = parse_args();
-
-    if opts.ctty {
-        eprintln!("The --ctty flag is currently not implemented");
-        process::exit(EXIT_FAILURE);
-    }
-
-    if opts.wait {
-        eprintln!("The --wait flag is currently not implemented");
-        process::exit(EXIT_FAILURE);
-    }
 
     if opts.fork || is_process_group_leader() {
         fork();
