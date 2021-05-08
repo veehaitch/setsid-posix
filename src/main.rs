@@ -92,7 +92,7 @@ fn parse_args() -> Opts {
         eprintln!("The --ctty flag is currently not implemented");
         process::exit(EXIT_FAILURE);
     }
-    
+
     Opts {
         fork: matches.is_present("fork"),
         program: matches.value_of("program").unwrap().to_string(),
