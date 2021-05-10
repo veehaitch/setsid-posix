@@ -4,7 +4,7 @@ use std::process;
 use std::result::Result::{Err, Ok};
 use std::string::String;
 
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg};
 use nix::libc::{EXIT_FAILURE, EXIT_SUCCESS};
 use nix::unistd::{getpgrp, getpid, setsid, ForkResult};
 
@@ -40,6 +40,7 @@ struct Opts {
 
 fn parse_args() -> Opts {
     let matches = App::new(crate_name!())
+        .setting(AppSettings::TrailingVarArg)
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
