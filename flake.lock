@@ -22,15 +22,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1623927034,
-        "narHash": "sha256-sGxlmfp5eXL5sAMNqHSb04Zq6gPl+JeltIZ226OYN0w=",
-        "owner": "nmattia",
+        "lastModified": 1625764329,
+        "narHash": "sha256-fD7BGYOevNg0WjFErDg6U4ykAyp1NNW5i2FmcQojiVA=",
+        "owner": "yaxitech",
         "repo": "naersk",
-        "rev": "e09c320446c5c2516d430803f7b19f5833781337",
+        "rev": "373da7b239ed0a6e0f78db00039a70ba5119b434",
         "type": "github"
       },
       "original": {
-        "owner": "nmattia",
+        "owner": "yaxitech",
+        "ref": "aarch64-darwin",
         "repo": "naersk",
         "type": "github"
       }
