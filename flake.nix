@@ -11,7 +11,8 @@
       inputs.flake-utils.follows = "flake-utils";
     };
     naersk = {
-      url = "github:nmattia/naersk";
+      # https://github.com/nmattia/naersk/pull/182
+      url = "github:yaxitech/naersk/aarch64-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -20,8 +21,11 @@
     let
       cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       name = cargoTOML.package.name;
+
+      defaultSystems = flake-utils.lib.defaultSystems ++ [ "aarch64-darwin" ];
+      eachDefaultSystem = flake-utils.lib.eachSystem (defaultSystems);
     in
-    flake-utils.lib.eachDefaultSystem
+    eachDefaultSystem
       (system:
         let
           pkgs = import nixpkgs {
