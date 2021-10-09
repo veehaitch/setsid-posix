@@ -5,17 +5,40 @@ use std::result::Result::{Err, Ok};
 use std::string::String;
 
 use clap::{crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg};
-use nix::libc::{EXIT_FAILURE, EXIT_SUCCESS};
 use nix::unistd::{getpgrp, getpid, setsid, ForkResult};
+use nix::{
+    libc::{c_int, wait, EXIT_FAILURE, EXIT_SUCCESS, WEXITSTATUS, WIFEXITED},
+    unistd::Pid,
+};
 
 fn is_process_group_leader() -> bool {
     getpid() == getpgrp()
 }
 
-fn fork() {
+fn handle_parent(child: Pid, wait_child: bool) {
+    if wait_child {
+        unsafe {
+            let mut wstatus: i32 = 0;
+            if wait(&mut wstatus as *mut c_int) != child.as_raw() {
+                eprintln!("Failed to wait for child {}", child);
+            }
+
+            if WIFEXITED(wstatus) {
+                process::exit(WEXITSTATUS(wstatus));
+            } else {
+                eprintln!("Child {} did not exit normally", child);
+                process::exit(EXIT_FAILURE);
+            }
+        }
+    } else {
+        process::exit(EXIT_SUCCESS);
+    }
+}
+
+fn fork(wait_child: bool) {
     match unsafe { nix::unistd::fork() } {
-        Ok(ForkResult::Parent { child: _child, .. }) => {
-            process::exit(EXIT_SUCCESS);
+        Ok(ForkResult::Parent { child, .. }) => {
+            handle_parent(child, wait_child);
         }
         Ok(ForkResult::Child) => {}
         Err(_) => {
@@ -36,6 +59,7 @@ struct Opts {
     fork: bool,
     program: String,
     arguments: Vec<String>,
+    wait: bool,
 }
 
 fn parse_args() -> Opts {
@@ -84,11 +108,6 @@ fn parse_args() -> Opts {
         )
         .get_matches();
 
-    if matches.is_present("wait") {
-        eprintln!("The --wait flag is currently not implemented");
-        process::exit(EXIT_FAILURE);
-    }
-
     if matches.is_present("ctty") {
         eprintln!("The --ctty flag is currently not implemented");
         process::exit(EXIT_FAILURE);
@@ -102,6 +121,7 @@ fn parse_args() -> Opts {
             .unwrap_or_default()
             .map(std::string::ToString::to_string)
             .collect(),
+        wait: matches.is_present("wait"),
     }
 }
 
@@ -109,7 +129,10 @@ fn main() {
     let opts = parse_args();
 
     if opts.fork || is_process_group_leader() {
-        fork();
+        fork(opts.wait);
+    } else if opts.wait {
+        eprintln!("Cannot wait without forking. Consider the `--fork` switch.");
+        // Not exiting to achieve compatibility with the original `setsid(1)`
     }
 
     create_new_session();
