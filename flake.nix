@@ -146,6 +146,7 @@
         {
           "${name}" = setsid;
           inherit utillinux;
+          util-linux = utillinux;
         };
     };
 }
