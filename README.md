@@ -9,7 +9,7 @@ Please note that the `--wait` and `--ctty` switches are currently not implemente
 ## Usage
 
 ```
-setsid 0.1.0
+setsid-posix 0.1.0
 Vincent Haupert <mail@vincent-haupert.de>
 A POSIX implementation of setsid(1)
 
@@ -32,6 +32,14 @@ ARGS:
 
 #### Nix Flakes
 
+##### Run
+
 ```ShellSession
 nix run github:veehaitch/setsid-posix -- --help
 ```
+
+##### Overlay
+
+The Flake also provides an overlay for `util-linux` which links `setsid` to `setsid-posix` from this project on non-Linux systems.
+On Linux, the overlay has no effect passing through the upstream `util-linux` package from `nixpkgs`.
+Additionally, the overlay provides this project explicitly as `setsid-posix`.

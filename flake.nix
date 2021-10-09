@@ -20,6 +20,7 @@
     let
       cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       name = cargoTOML.package.name;
+      version = cargoTOML.package.version;
     in
     flake-utils.lib.eachDefaultSystem
       (system:
@@ -57,6 +58,13 @@
               # rustfmt
               ''cargo fmt -- --check''
             ];
+
+            overrideMain = _: {
+              postInstall = ''
+                # Provide a symlink from `setsid-posix` to `setsid` for compat
+                ln -sr "$out/bin/${name}" "$out/bin/setsid"
+              '';
+            };
           };
           defaultPackage = packages.${name};
 
@@ -65,6 +73,38 @@
             drv = packages.${name};
           };
           defaultApp = apps.${name};
+
+          # `nix check`
+          checks.test-util-linux-overlay =
+            let
+              expectedVersion =
+                if pkgs.stdenv.isLinux
+                then "setsid from util-linux ${pkgs.util-linux.version}"
+                else "${name} ${version}";
+              testPkgs = import nixpkgs {
+                inherit system;
+                overlays = [ self.overlay ];
+              };
+            in
+            with testPkgs; runCommand "test-utillinux-overlay"
+              {
+                # Uses `utillinux` instead of `util-linux` to make sure the alias works
+                buildInputs = [ utillinux tree ];
+              } ''
+              set -euo pipefail
+
+              VERSION=$(setsid -V)
+              if [[ $? != 0 ]]; then
+                echo "Executing setsid failed"
+              elif [[ $VERSION == "${expectedVersion}" ]]; then
+                echo "Found expected version: $VERSION"
+                echo "Directory tree:"
+                tree ${utillinux}
+                mkdir $out
+              else
+                echo "Didn't find expected setsid from util-linux: $VERSION"
+              fi
+            '';
 
           # `nix develop`
           devShell = pkgs.mkShell {
@@ -85,22 +125,28 @@
       overlay = final: prev:
         let
           setsid = self.packages.${prev.system}.${name};
-          utillinux-setsid = prev.runCommandNoCC "utillinux-setsid" { } ''
+          util-linux-setsid = prev.runCommandNoCC "util-linux-setsid"
+            {
+              propagatedBuildInputs = [ prev.util-linux ];
+            } ''
             mkdir "$out"
-            cp -r "${prev.utillinux}/." "$out/"
-            if [[ ! -e "$out/bin/setsid" ]]; then
-              chmod 755 "$out/bin"
-              ln -s "${setsid}/bin/${name}" "$out/bin/setsid"
-            fi
+            ln -s ${prev.util-linux}/* "$out/"
+
+            rm -f     "$out/bin"
+            mkdir     "$out/bin"
+            chmod 755 "$out/bin"
+            ln -s ${prev.util-linux}/bin/* "$out/bin/"
+
+            ln -s "${setsid}/bin/${name}" "$out/bin/setsid"
           '';
-          utillinux =
+          util-linux =
             if prev.stdenv.isLinux
-            then prev.utillinux
-            else utillinux-setsid;
+            then prev.util-linux
+            else util-linux-setsid;
         in
         {
           "${name}" = setsid;
-          inherit utillinux;
+          inherit util-linux;
         };
     };
 }

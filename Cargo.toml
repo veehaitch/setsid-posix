@@ -1,5 +1,5 @@
 [package]
-name = "setsid"
+name = "setsid-posix"
 description = "A POSIX implementation of setsid(1)"
 version = "0.1.0"
 authors = ["Vincent Haupert <mail@vincent-haupert.de>"]
