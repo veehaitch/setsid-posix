@@ -40,6 +40,6 @@ nix run github:veehaitch/setsid-posix -- --help
 
 ##### Overlay
 
-The Flake also provides an overlay for `utillinux`/`util-linux` which links `setsid` to `setsid-posix` from this project on non-Linux systems.
-On Linux, the overlay has no effect passing through the upstream `utillinux` package from `nixpkgs`.
+The Flake also provides an overlay for `util-linux` which links `setsid` to `setsid-posix` from this project on non-Linux systems.
+On Linux, the overlay has no effect passing through the upstream `util-linux` package from `nixpkgs`.
 Additionally, the overlay provides this project explicitly as `setsid-posix`.

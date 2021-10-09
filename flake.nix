@@ -75,11 +75,11 @@
           defaultApp = apps.${name};
 
           # `nix check`
-          checks.test-utillinux-overlay =
+          checks.test-util-linux-overlay =
             let
               expectedVersion =
                 if pkgs.stdenv.isLinux
-                then "setsid from util-linux ${pkgs.utillinux.version}"
+                then "setsid from util-linux ${pkgs.util-linux.version}"
                 else "${name} ${version}";
               testPkgs = import nixpkgs {
                 inherit system;
@@ -88,6 +88,7 @@
             in
             with testPkgs; runCommand "test-utillinux-overlay"
               {
+                # Uses `utillinux` instead of `util-linux` to make sure the alias works
                 buildInputs = [ utillinux tree ];
               } ''
               set -euo pipefail
@@ -101,7 +102,7 @@
                 tree ${utillinux}
                 mkdir $out
               else
-                echo "Didn't find expected setsid from utillinux: $VERSION"
+                echo "Didn't find expected setsid from util-linux: $VERSION"
               fi
             '';
 
@@ -124,29 +125,28 @@
       overlay = final: prev:
         let
           setsid = self.packages.${prev.system}.${name};
-          utillinux-setsid = prev.runCommandNoCC "utillinux-setsid"
+          util-linux-setsid = prev.runCommandNoCC "util-linux-setsid"
             {
-              propagatedBuildInputs = [ prev.utillinux ];
+              propagatedBuildInputs = [ prev.util-linux ];
             } ''
             mkdir "$out"
-            ln -s ${prev.utillinux}/* "$out/"
+            ln -s ${prev.util-linux}/* "$out/"
 
             rm -f     "$out/bin"
             mkdir     "$out/bin"
             chmod 755 "$out/bin"
-            ln -s ${prev.utillinux}/bin/* "$out/bin/"
+            ln -s ${prev.util-linux}/bin/* "$out/bin/"
 
             ln -s "${setsid}/bin/${name}" "$out/bin/setsid"
           '';
-          utillinux =
+          util-linux =
             if prev.stdenv.isLinux
-            then prev.utillinux
-            else utillinux-setsid;
+            then prev.util-linux
+            else util-linux-setsid;
         in
         {
           "${name}" = setsid;
-          inherit utillinux;
-          util-linux = utillinux;
+          inherit util-linux;
         };
     };
 }
