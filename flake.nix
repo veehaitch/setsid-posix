@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-21.05";
     flake-utils = {
       url = "github:numtide/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,8 +11,7 @@
       inputs.flake-utils.follows = "flake-utils";
     };
     naersk = {
-      # https://github.com/nmattia/naersk/pull/182
-      url = "github:yaxitech/naersk/aarch64-darwin";
+      url = "github:nix-community/naersk";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -21,11 +20,8 @@
     let
       cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       name = cargoTOML.package.name;
-
-      defaultSystems = flake-utils.lib.defaultSystems ++ [ "aarch64-darwin" ];
-      eachDefaultSystem = flake-utils.lib.eachSystem (defaultSystems);
     in
-    eachDefaultSystem
+    flake-utils.lib.eachDefaultSystem
       (system:
         let
           pkgs = import nixpkgs {
@@ -57,7 +53,7 @@
             doCheck = true;
             cargoTestCommands = x: x ++ [
               # clippy
-              ''cargo clippy --all --all-features --tests -- -D clippy::pedantic''
+              ''cargo clippy --all --all-features --tests -- -D clippy::pedantic -D warnings''
               # rustfmt
               ''cargo fmt -- --check''
             ];
