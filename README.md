@@ -4,7 +4,7 @@ On Linux, the `setsid(1)` command line tool is part of `util-linux`.
 This tiny `setsid` implementation should help you out where that package is usually not available
 (e.g., on macOS).
 
-Please note that the `--wait` and `--ctty` switches are currently not implemented.
+Please note that the `--ctty` switch is currently not implemented.
 
 ## Usage
 
