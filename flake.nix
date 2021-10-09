@@ -83,6 +83,8 @@
               {
                 buildInputs = [ utillinux tree ];
               } ''
+              set -euo pipefail
+
               VERSION=$(setsid -V)
               if [[ $? != 0 ]]; then
                 echo "Executing setsid failed"
