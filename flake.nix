@@ -70,15 +70,18 @@
           # `nix check`
           checks.test-utillinux-overlay =
             let
-              pkgs = import nixpkgs {
+              expectedVersion =
+                if pkgs.stdenv.isLinux
+                then "setsid from util-linux ${pkgs.utillinux.version}"
+                else "setsid ${version}";
+              testPkgs = import nixpkgs {
                 inherit system;
                 overlays = [ self.overlay ];
               };
-              expectedVersion = if pkgs.stdenv.isLinux then "" else "setsid ${version}";
             in
-            pkgs.runCommand "test-utillinux-overlay"
+            with testPkgs; runCommand "test-utillinux-overlay"
               {
-                buildInputs = [ pkgs.utillinux pkgs.tree ];
+                buildInputs = [ utillinux tree ];
               } ''
               VERSION=$(setsid -V)
               if [[ $? != 0 ]]; then
@@ -86,7 +89,7 @@
               elif [[ $VERSION == "${expectedVersion}" ]]; then
                 echo "Found expected version: $VERSION"
                 echo "Directory tree:"
-                tree ${pkgs.utillinux}
+                tree ${utillinux}
                 mkdir $out
               else
                 echo "Didn't find expected setsid from utillinux: $VERSION"
