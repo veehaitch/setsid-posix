@@ -58,6 +58,13 @@
               # rustfmt
               ''cargo fmt -- --check''
             ];
+
+            overrideMain = _: {
+              postInstall = ''
+                # Provide a symlink from `setsid-posix` to `setsid` for compat
+                ln -sr "$out/bin/${name}" "$out/bin/setsid"
+              '';
+            };
           };
           defaultPackage = packages.${name};
 
@@ -73,7 +80,7 @@
               expectedVersion =
                 if pkgs.stdenv.isLinux
                 then "setsid from util-linux ${pkgs.utillinux.version}"
-                else "setsid ${version}";
+                else "${name} ${version}";
               testPkgs = import nixpkgs {
                 inherit system;
                 overlays = [ self.overlay ];
