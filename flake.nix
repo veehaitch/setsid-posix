@@ -20,6 +20,7 @@
     let
       cargoTOML = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       name = cargoTOML.package.name;
+      version = cargoTOML.package.version;
     in
     flake-utils.lib.eachDefaultSystem
       (system:
@@ -66,6 +67,32 @@
           };
           defaultApp = apps.${name};
 
+          # `nix check`
+          checks.test-utillinux-overlay =
+            let
+              pkgs = import nixpkgs {
+                inherit system;
+                overlays = [ self.overlay ];
+              };
+              expectedVersion = if pkgs.stdenv.isLinux then "" else "setsid ${version}";
+            in
+            pkgs.runCommand "test-utillinux-overlay"
+              {
+                buildInputs = [ pkgs.utillinux pkgs.tree ];
+              } ''
+              VERSION=$(setsid -V)
+              if [[ $? != 0 ]]; then
+                echo "Executing setsid failed"
+              elif [[ $VERSION == "${expectedVersion}" ]]; then
+                echo "Found expected version: $VERSION"
+                echo "Directory tree:"
+                tree ${pkgs.utillinux}
+                mkdir $out
+              else
+                echo "Didn't find expected setsid from utillinux: $VERSION"
+              fi
+            '';
+
           # `nix develop`
           devShell = pkgs.mkShell {
             name = "${name}-dev-shell";
@@ -85,13 +112,19 @@
       overlay = final: prev:
         let
           setsid = self.packages.${prev.system}.${name};
-          utillinux-setsid = prev.runCommandNoCC "utillinux-setsid" { } ''
+          utillinux-setsid = prev.runCommandNoCC "utillinux-setsid"
+            {
+              propagatedBuildInputs = [ prev.utillinux ];
+            } ''
             mkdir "$out"
-            cp -r "${prev.utillinux}/." "$out/"
-            if [[ ! -e "$out/bin/setsid" ]]; then
-              chmod 755 "$out/bin"
-              ln -s "${setsid}/bin/${name}" "$out/bin/setsid"
-            fi
+            ln -s ${prev.utillinux}/* "$out/"
+
+            rm -f     "$out/bin"
+            mkdir     "$out/bin"
+            chmod 755 "$out/bin"
+            ln -s ${prev.utillinux}/bin/* "$out/bin/"
+
+            ln -s "${setsid}/bin/${name}" "$out/bin/setsid"
           '';
           utillinux =
             if prev.stdenv.isLinux
