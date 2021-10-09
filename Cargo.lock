@@ -99,7 +99,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setsid"
+name = "setsid-posix"
 version = "0.1.0"
 dependencies = [
  "clap",
