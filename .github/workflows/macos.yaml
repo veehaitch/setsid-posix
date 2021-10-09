@@ -38,7 +38,7 @@ jobs:
           cargo build --release --target="${{ matrix.target }}"
       - uses: actions/upload-artifact@v2
         with:
-          name: setsid-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/setsid
+          name: setsid-posix-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/setsid-posix
           if-no-files-found: error
 
