@@ -3,8 +3,8 @@ name = "setsid-posix"
 description = "A POSIX implementation of setsid(1)"
 version = "0.1.0"
 authors = ["Vincent Haupert <mail@vincent-haupert.de>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 nix = "^0.23"
-clap = "^2.33"
+clap = { version = "^3.0", features = [ "cargo" ] }

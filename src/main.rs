@@ -69,41 +69,41 @@ fn parse_args() -> Opts {
         .author(crate_authors!())
         .about(crate_description!())
         .arg(
-            Arg::with_name("ctty")
+            Arg::new("ctty")
                 .help(
                     "Set the controlling terminal to the current one. \
                     Currently not implemented.",
                 )
                 .long("ctty")
-                .short("c")
+                .short('c')
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("fork")
+            Arg::new("fork")
                 .help("Always create a new process")
                 .long("fork")
-                .short("f")
+                .short('f')
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("wait")
+            Arg::new("wait")
                 .help(
                     "Wait for the execution of the program to end, and return the exit value \
                     of this program as the return value of setsid",
                 )
                 .long("wait")
-                .short("w")
+                .short('w')
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("program")
+            Arg::new("program")
                 .required(true)
                 .help("The program to run in a new session"),
         )
         .arg(
-            Arg::with_name("arguments")
+            Arg::new("arguments")
                 .help("The arguments to pass to `program`, if any")
-                .multiple(true)
+                .multiple_values(true)
                 .required(false),
         )
         .get_matches();
