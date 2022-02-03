@@ -109,7 +109,6 @@
       # SYSTEM-INDEPENDENT OUTPUTS
       #
       {
-        # Overlay to add ragenix and replace agenix
         overlay = final: prev:
           let
             setsid = self.packages.${prev.system}.${name};
