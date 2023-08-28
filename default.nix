@@ -39,10 +39,10 @@ rustPlatform.buildRustPackage rec {
   ];
 
   codeStyleConformanceCheck = ''
-    header "Checking Rust code formatting"
+    printf "Checking Rust code formatting"
     cargo fmt -- --check
 
-    header "Running clippy"
+    printf "Running clippy"
     # clippy - use same checkType as check-phase to avoid double building
     if [ "''${cargoCheckType}" != "debug" ]; then
         cargoCheckProfileFlag="--''${cargoCheckType}"
