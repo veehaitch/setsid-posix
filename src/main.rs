@@ -7,7 +7,7 @@ use std::string::String;
 use clap::Parser;
 use nix::unistd::{getpgrp, getpid, setsid, ForkResult};
 use nix::{
-    libc::{c_int, wait, EXIT_FAILURE, EXIT_SUCCESS, WEXITSTATUS, WIFEXITED},
+    libc::{wait, EXIT_FAILURE, EXIT_SUCCESS, WEXITSTATUS, WIFEXITED},
     unistd::Pid,
 };
 
@@ -19,14 +19,14 @@ fn handle_parent(child: Pid, wait_child: bool) {
     if wait_child {
         unsafe {
             let mut wstatus: i32 = 0;
-            if wait(&mut wstatus as *mut c_int) != child.as_raw() {
-                eprintln!("Failed to wait for child {}", child);
+            if wait(std::ptr::addr_of_mut!(wstatus)) != child.as_raw() {
+                eprintln!("Failed to wait for child {child}");
             }
 
             if WIFEXITED(wstatus) {
                 process::exit(WEXITSTATUS(wstatus));
             } else {
-                eprintln!("Child {} did not exit normally", child);
+                eprintln!("Child {child} did not exit normally");
                 process::exit(EXIT_FAILURE);
             }
         }
